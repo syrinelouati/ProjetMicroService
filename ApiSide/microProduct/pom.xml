@@ -8,7 +8,7 @@
 		<version>3.2.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.wissal</groupId>
+	<groupId>com.syrin</groupId>
 	<artifactId>microProduct</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>microProduct</name>
