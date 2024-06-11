@@ -1,8 +1,9 @@
 package org.event.Controllers;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.event.Entity.*;
+import org.event.Entity.Event;
+import org.event.Entity.EventDto;
+import org.event.Entity.EventCategory;
 import org.event.Services.IEventService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -11,9 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +23,6 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200/")
 @RequiredArgsConstructor
 @RequestMapping("api/event")
-
 public class EventContoller {
 
     private final IEventService iEventService;
@@ -30,8 +30,7 @@ public class EventContoller {
 
     @GetMapping
     public List<Event> getAll() {
-        List<Event> events = iEventService.getAllEvents();
-        return events;
+        return iEventService.getAllEvents();
     }
 
     @GetMapping("/categories")
@@ -41,16 +40,16 @@ public class EventContoller {
 
     @GetMapping("/{id}")
     public Event get(@PathVariable int id) {
-        Event event = iEventService.getEventById(id);
-        return event;
+        return iEventService.getEventById(id);
     }
 
     @PostMapping("/addEvent")
-    public Event addEvent(@ModelAttribute EventDto eventDto) {
+    public Event addEvent(@RequestPart("event") EventDto eventDto,
+                          @RequestPart("image") MultipartFile image) throws IOException {
         Event event = modelMapper.map(eventDto, Event.class);
-
-        //CampPlace campPlace = this.iCampPlaceService.getCampPlaceById(eventDto.getIdCampPlace());
-        //event.setCampPlace(campPlace);
+        if (!image.isEmpty()) {
+            event.setImage(image.getBytes());
+        }
         iEventService.addEvent(event);
         return event;
     }
@@ -61,17 +60,14 @@ public class EventContoller {
     }
 
     @PutMapping
-    public void update(@ModelAttribute EventDto eventDto) {
+    public void update(@RequestPart("event") EventDto eventDto,
+                       @RequestPart("image") MultipartFile image) throws IOException {
         Event event = modelMapper.map(eventDto, Event.class);
-
-       // CampPlace campPlace = this.iCampPlaceService.getCampPlaceById(eventDto.getIdCampPlace());
-        //event.setCampPlace(campPlace);
-
+        if (!image.isEmpty()) {
+            event.setImage(image.getBytes());
+        }
         iEventService.updateEvent(event);
     }
-
-
-
 
     @GetMapping("/filteredEvents")
     public Page<Event> getFilteredEvents(
@@ -82,9 +78,8 @@ public class EventContoller {
             @RequestParam(required = false, defaultValue = "2050-12-12") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size,
-            @RequestParam(required = false,defaultValue = "id,asc") String sort,
-            @RequestParam(required = false,defaultValue = "") String search
-
+            @RequestParam(required = false, defaultValue = "id,asc") String sort,
+            @RequestParam(required = false, defaultValue = "") String search
     ) {
         if (categories == null) {
             categories = Arrays.asList(EventCategory.values());
@@ -103,15 +98,15 @@ public class EventContoller {
         );
     }
 
-
     private Sort getSort(String sort) {
         String[] sortParams = sort.split(",");
         String property = sortParams[0];
         String direction = sortParams[1];
         return Sort.by(Sort.Direction.fromString(direction), property);
     }
+
     @GetMapping("eventCount")
-    public long getEventsCount(){
-        return this.iEventService.eventCount();
+    public long getEventsCount() {
+        return iEventService.eventCount();
     }
 }
