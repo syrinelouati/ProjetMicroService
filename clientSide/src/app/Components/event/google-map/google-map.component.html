@@ -1,0 +1,10 @@
+<google-map height="500px"
+            width="100%"
+            [center]="center"
+            [zoom]="zoom"
+            (mapClick)="moveMap($event)"
+            (mapMousemove)="move($event)"
+            >
+  <map-marker [options]="markerOptions" [position]="center"></map-marker>
+</google-map>
+

@@ -1,0 +1,129 @@
+
+<div class="mx-5">
+    <div class="mx-5 mt-4 mb-4">
+        <h4>Add New Event</h4>
+    </div>
+
+    <div class="card mx-5">
+        <div class="card-body">
+            <form enctype="multipart/form-data" (ngSubmit)="upsertEvent(eventNgForm)" #eventNgForm="ngForm" #form>
+                <div class="container-fluid row mt-2">
+                    <div class="col-lg-6 col-md-12 p-5 container-left-side">
+                      <div class="form-group mb-3">
+                        <label for="campSelect" class="form-label">CampPlace</label>
+                        <select class="form-select" id="campSelect" [(ngModel)]="event.idCampPlace" name="camp">
+                          <option value="" selected disabled>Select Camp Place</option>
+                          <option *ngFor="let camp of campPlaces" [value]="camp.idCampPlace">{{camp.name}}</option>
+                        </select>
+                      </div>
+                        <div class="form-group mb-3">
+                          <label for="categorySelect" class="form-label">Category</label>
+                          <select class="form-select" id="categorySelect" [(ngModel)]="event.category" name="category">
+                            <option value="" selected disabled>Select a category</option>
+                            <option *ngFor="let category of categories" [value]="category">{{ formatCategoryName(category) }}</option>
+                          </select>
+                        </div>
+
+
+                        <div class="form-group mb-3">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate"
+                                [(ngModel)]="event.startDate" required>
+                            <div class="invalid-feedback">Sorry, that username's taken. Try another?</div>
+
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="endDate">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required [(ngModel)]="event.endDate"
+                                required>
+                        </div>
+                        <label class="mb-2">Add Images</label>
+                        <div class="custom-dropzone" ngx-dropzone [multiple]="false"  (change)="onSelect($event)">
+                            <ngx-dropzone-label>
+                                <div>
+                                  <i class="bi bi-cloud-arrow-up-fill icon"></i>
+                                    <h4>Drag an image here or browse for an image to upload.</h4>
+                                </div>
+                            </ngx-dropzone-label>
+                            <ngx-dropzone-image-preview   ngProjectAs="ngx-dropzone-preview" *ngFor="let f of files"
+                                [file]="f"  [removable]="true" (removed)="onRemove(f)">
+                                <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                            </ngx-dropzone-image-preview>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-md-12 p-5 ">
+
+                        <div class="form-group mb-3">
+                            <label for="name">Name</label>
+                            <input #nameRef="ngModel" type="text" required class="form-control"
+                            [ngClass]="{'is-invalid' :(nameRef.invalid &&(nameRef.touched || nameRef.dirty))}"
+                             id="name" name="name" [(ngModel)]="event.name" required minlength="5">
+                            <div *ngIf="nameRef.invalid && (nameRef.touched ||nameRef.dirty)" class="invalid-feedback">
+                                <div *ngIf="nameRef.errors?.['required']">Event Name is required.
+                                </div>
+                                <div *ngIf="nameRef.errors?.['minlength']"> Event Name is too short.
+                                </div>
+                              </div>
+                        </div>
+
+
+
+
+                        <div class="form-group mb-3">
+                          <label for="name">Video Url</label>
+                          <input #videoRef="ngModel" type="text" required class="form-control"
+                          [ngClass]="{'is-invalid' :(videoRef.invalid &&(videoRef.touched || videoRef.dirty))}"
+                           id="video" name="video" [(ngModel)]="event.videoUrl" required >
+                          <div *ngIf="videoRef.invalid && (videoRef.touched ||videoRef.dirty)" class="invalid-feedback">
+                              <div *ngIf="videoRef.errors?.['required']">Event Video is required.
+                              </div>
+                            </div>
+                      </div>
+
+
+                        <div class="form-group mb-3">
+                            <label for="description">Description</label>
+                            <textarea #descriptionRef="ngModel" rows="5" required class="form-control"
+                            [ngClass]="{'is-invalid' :(descriptionRef.invalid && (descriptionRef.touched || descriptionRef.dirty))}"
+                             id="description" name="description"
+                                [(ngModel)]="event.description" required minlength="50"></textarea>
+                                <div *ngIf="descriptionRef.invalid && (descriptionRef.touched ||descriptionRef.dirty)" class="invalid-feedback">
+                                    <div *ngIf="descriptionRef.errors?.['required']">Event Description is required.
+                                    </div>
+                                    <div *ngIf="descriptionRef.errors?.['minlength']"> Event Description is too short.
+                                    </div>
+                                  </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label ">Event Price</label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">$</span>
+                                <input #priceRef="ngModel" type="number" class="form-control" aria-label="Amount (to the nearest dollar)" required min="1"
+                                 [ngClass]="{'is-invalid' :(priceRef.invalid &&(priceRef.touched || priceRef.dirty))}" id="price" name="price" [(ngModel)]="event.price">
+                                <div *ngIf="priceRef.invalid && (priceRef.touched ||priceRef.dirty)" class="invalid-feedback">
+                                    <div *ngIf="priceRef.errors?.['required']">Event Price is required.
+                                    </div>
+                                  </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="nbParticipant">Number of Participants</label>
+                            <input  #nbParticipantRef="ngModel" type="number" class="form-control"  required
+                            [ngClass]="{'is-invalid' :(nbParticipantRef.invalid &&(nbParticipantRef.touched || nbParticipantRef.dirty))}" id="nbParticipant" name="nbParticipant"
+                                [(ngModel)]="event.nbParticipant" required min="1">
+                                <div *ngIf="nbParticipantRef.invalid && (nbParticipantRef.touched ||nbParticipantRef.dirty)" class="invalid-feedback">
+                                    <div *ngIf="nbParticipantRef.errors?.['required']">Event Price is required.
+                                    </div>
+                                  </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary" [disabled]="!form.checkValidity()" >Add Event</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

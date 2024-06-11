@@ -1,0 +1,167 @@
+version: '3.8'
+services:
+  keycloak_web:
+    image: quay.io/keycloak/keycloak:21.1
+    container_name: keycloak_web
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloakdb:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 9999
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_LOG_LEVEL: info
+      KC_METRICS_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    depends_on:
+      - keycloakdb
+    ports:
+      - 9999:8080
+    networks:
+      - microservice
+
+  keycloakdb:
+    image: postgres:13.5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    networks:
+      - microservice
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3307:3306"
+    networks:
+      - microservice
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  api-gateway:
+    build: ./api-gateway/
+    ports:
+      - "8095:8080"
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://discovery-server:8080/eureka
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  discovery-server:
+    build: ./discovery-server/
+    container_name: discovery-server
+    ports:
+      - '8761:8080'
+    environment:
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  event:
+    build: ./microEvent/
+    ports:
+      - "8090:8080"
+    environment:
+      spring.datasource.url: "jdbc:mysql://mysql:3306/EventDb?createDatabaseIfNotExist=true"
+      eureka.client.serviceUrl.defaultZone: http://discovery-server:8080/eureka
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  microproducts:
+    build: ./microProduct/
+    ports:
+      - "8091:8080"
+    environment:
+      spring.datasource.url: "jdbc:mysql://mysql:3306/ProductMicroDb?createDatabaseIfNotExist=true"
+      eureka.client.serviceUrl.defaultZone: http://discovery-server:8080/eureka
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  feedback:
+    build: ./microFeedback/
+    ports:
+      - "8094:8080"
+    environment:
+      spring.datasource.url: "jdbc:mysql://mysql:3306/FeedbackMicroDb?createDatabaseIfNotExist=true"
+      eureka.client.serviceUrl.defaultZone: http://discovery-server:8080/eureka
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  microcampplace:
+    build: ./MicroCampPlace/
+    ports:
+      - "8097:8080"
+    environment:
+      spring.datasource.url: "jdbc:mysql://mysql:3306/CampPlaceMicroDb?createDatabaseIfNotExist=true"
+      eureka.client.serviceUrl.defaultZone: http://discovery-server:8080/eureka
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  reservation:
+    build: ./microReservation/
+    ports:
+      - "8092:9090"
+    environment:
+      spring.datasource.url: "jdbc:mysql://mysql:3306/ReservationMicroDb?createDatabaseIfNotExist=true"
+      eureka.client.serviceUrl.defaultZone: http://discovery-server:8080/eureka
+      server.port: 8080
+    networks:
+      - microservice
+    depends_on:
+      - mysql
+
+  django_app:
+    image: django-docker:0.0.1
+    build: .
+    ports:
+      - "8000:8000"
+    networks:
+      - microservice
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: "" # Set according to your MySQL setup
+    ports:
+      - "8081:80" # Map phpMyAdmin to port 8081 on the host
+    networks:
+      - microservice
+
+networks:
+  microservice:
+volumes:
+  mysql_data:
+  postgres_data:
+  keycloak-db:
+    driver: local

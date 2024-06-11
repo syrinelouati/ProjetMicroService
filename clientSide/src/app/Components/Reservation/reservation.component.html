@@ -1,0 +1,42 @@
+<div class="background-image"></div>
+<div class="container">
+  <div class="flex-container">
+    <div class="card">
+      <div class="card-header">
+        We glad to make your reservation easier
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <p class="text">
+            Start date: {{ event.startDate  | date: 'yyyy-MM-dd' }} <br>
+            End date: {{ event.endDate  | date: 'yyyy-MM-dd' }} <br><br><br>
+            Location: {{ event.campPlace.name}}, {{event.campPlace.address}}
+          </p>
+        </div>
+        <div class="inputbox">
+          <textarea rows="5" cols="65" [(ngModel)]="reservation.notes" required type="text"  name="additional_notes" id="additional_notes"></textarea>
+          <span>Additional notes</span>
+        </div>
+        <button (click)="submitReservation()" class="button">Book</button>
+      </div>
+    </div>
+    <div class="video-container">
+      <iframe width="600" height="315" [src]="event.videoUrl | safe" title="Tabarka - طبرقة - Tunisia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+    <div class="cards">
+      <img  [src]="'data:image/jpeg;base64,' + event.image">
+          <img  [src]="'data:image/jpeg;base64,' + img.image" *ngFor="let img of event.campPlace.images" >
+
+</div>
+    </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+
+
